@@ -1,6 +1,12 @@
 // phina.js をグローバル領域に展開
 phina.globalize();
 
+var num=0;
+var roled=false;
+var moving=false;
+var player;
+var sprite=[];
+var target=46;
 var id=['','white','red','blue','green','yellow','black'];
 var ASSETS = {
   // 画像
@@ -11,7 +17,7 @@ var ASSETS = {
     'blue': 'grid/blue.png',
     'yellow': 'grid/yellow.png',
     'green': 'grid/green.png',
-    'tomapiko': 'https://cdn.jsdelivr.net/gh/phinajs/phina.js@develop/assets/images/tomapiko_ss.png',
+    'tomapiko': 'https://rawgit.com/phi-jp/phina.js/develop/assets/images/tomapiko.png',
   },
 };
 // MainScene クラスを定義
@@ -71,14 +77,14 @@ phina.define('MainScene', {
           case 0:
           break;
           case 9:
-          var sprite = Sprite(id[4], 1, 1).addChildTo(group);
-          sprite.setSize(8,96);
-          sprite.setPosition(80+80*r,80+80*c);
+          var path = Sprite(id[4], 1, 1).addChildTo(group);
+          path.setSize(8,96);
+          path.setPosition(80+80*r,80+80*c);
           break;
           default:
-          var sprite = Sprite(id[data[c][r]], 1, 1).addChildTo(group);
-          sprite.setSize(64,64);
-          sprite.setPosition(80+80*r,80+80*c);
+          sprite[root[c][r]] = Sprite(id[data[c][r]], 1, 1).addChildTo(group);
+          sprite[root[c][r]].setSize(64,64);
+          sprite[root[c][r]].setPosition(80+80*r,80+80*c);
           var t='';
           if(ev[c][r]>0){t='+'+ev[c][r];}
           else if(ev[c][r]<0){t=ev[c][r];}
@@ -90,28 +96,49 @@ phina.define('MainScene', {
           }).addChildTo(group);
           break;
         }
-        /*
-        if(data[c][r]!=0){
-          var sprite = Sprite(id[data[c][r]], 1, 1).addChildTo(group);
-          sprite.setSize(64,64);
-          sprite.setPosition(80+80*r,80+80*c);
-          var label=Label({
-            x:80+80*r,
-            y:80+80*c,
-            text:ev[c][r],
-            fill:'black',
-          }).addChildTo(group)
-        }*/
       }
     }
 
+    player = Sprite('tomapiko', 64, 64).addChildTo(this);
+    player.setPosition(80,80+80*10);
+
     // ラベルを生成
-    this.label = Label('Hello, phina.js!').addChildTo(this);
-    this.label.x = this.gridX.center(); // x 座標
-    this.label.y = this.gridY.center(); // y 座標
-    this.label.fill = 'white'; // 塗りつぶし色
+    var dice = Label({
+      x : this.gridX.center(),
+      y : this.gridY.center(),
+      fill:'white',
+    }).addChildTo(this);
+    dice.update=function(){
+      if(!roled && !moving){num = Math.floor(Math.random()*6+1); dice.text=num;}
+
+    }
   },
+
+  update:function(){
+
+  },
+
+  onpointstart: function() {
+    if(!roled){
+      roled=true;
+      var goal=target-num;
+      moving=true;
+      for(var i=0;i<num;i++){
+        target--;
+        player.tweener.moveTo(sprite[target].x,sprite[target].y,300)
+        .call(function() {
+          if(player.x==sprite[goal].x && player.y==sprite[goal].y){moving=false;}
+          
+        }).play();
+      }
+    }
+    else{
+      if(!moving){roled=false;}
+    }
+  }
+
 });
+
 
 // メイン処理
 phina.main(function() {
