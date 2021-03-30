@@ -6,8 +6,9 @@ var roled=false;
 var moving=false;
 var player;
 var sprite=[];
-var target=46;
-var id=['','white','red','blue','green','yellow','black'];
+var target=6;
+var dice;
+var id=['','white','blue','red','green','yellow','black'];
 var ASSETS = {
   // 画像
   image: {
@@ -30,17 +31,17 @@ phina.define('MainScene', {
 
     var group = DisplayElement().addChildTo(this);
     var data = [
-      [5,4,2,2,2,2,1],
+      [5,4,1,1,1,1,1],
       [0,9,0,0,0,0,1],
-      [1,4,2,4,2,2,1],
-      [1,0,0,9,0,0,0],
-      [1,2,2,4,2,2,1],
+      [1,4,1,1,1,1,1],
+      [1,0,0,0,0,0,0],
+      [1,1,1,4,1,1,1],
       [0,0,0,0,0,0,1],
-      [1,2,4,1,2,2,1],
+      [1,1,4,1,1,1,1],
       [1,0,9,0,0,0,0],
-      [1,2,4,2,1,4,1],
-      [0,0,0,0,0,9,1],
-      [5,2,2,2,2,4,1],
+      [1,1,4,1,1,4,1],
+      [0,0,0,0,0,9,2],
+      [5,2,1,1,1,4,3],
     ];
 
     var root = [
@@ -58,17 +59,17 @@ phina.define('MainScene', {
     ];
 
     var ev = [
-      [ 0,-12, 0, 0, 0, 0, 0],
+      ['G',-12, 0, 0, 0, 0, 0],
       [-1,-1,-1,-1,-1,-1, 0],
-      [ 0,12,0,-8, 0, 0, 0],
+      [ 0,12, 0, 0, 0, 0, 0],
       [ 0,-1,-1,-1,-1,-1,-1],
-      [ 0, 0, 0, 8, 0, 0, 0],
+      [ 0, 0, 0, 0, 0, 0, 0],
       [-1,-1,-1,-1,-1,-1, 0],
       [ 0, 0,-6, 0, 0, 0, 0],
       [ 0,-1,-1,-1,-1,-1,-1],
       [ 0, 0, 6, 0, 0,-4, 0],
-      [-1,-1,-1,-1,-1,-1, 0],
-      [ 0, 0, 0, 0, 0, 4, 0],
+      [-1,-1,-1,-1,-1,-1, 3],
+      ['S',2, 0, 0, 0, 4,-2],
     ];
 
     for(var c=0;c<data.length;c++){
@@ -88,6 +89,8 @@ phina.define('MainScene', {
           var t='';
           if(ev[c][r]>0){t='+'+ev[c][r];}
           else if(ev[c][r]<0){t=ev[c][r];}
+          else if(ev[c][r]==0){t='';}
+          else{t=ev[c][r];}
           var label=Label({
             x:80+80*r,
             y:80+80*c,
@@ -103,15 +106,16 @@ phina.define('MainScene', {
     player.setPosition(80,80+80*10);
 
     // ラベルを生成
-    var dice = Label({
+    dice = Label({
       x : this.gridX.center(),
       y : this.gridY.center(),
       fill:'white',
     }).addChildTo(this);
     dice.update=function(){
       if(!roled && !moving){num = Math.floor(Math.random()*6+1); dice.text=num;}
-
     }
+    text=Label({x:320,y:160,text:'',fill:'white'}).addChildTo(this);
+
   },
 
   update:function(){
@@ -121,19 +125,31 @@ phina.define('MainScene', {
   onpointstart: function() {
     if(!roled){
       roled=true;
-      var goal=target-num;
+      var goal=Math.max(0,target-num);
       moving=true;
       for(var i=0;i<num;i++){
-        target--;
+        target=Math.max(0,target-1);
         player.tweener.moveTo(sprite[target].x,sprite[target].y,300)
         .call(function() {
-          if(player.x==sprite[goal].x && player.y==sprite[goal].y){moving=false;}
-          
+          if(player.x==sprite[goal].x && player.y==sprite[goal].y){
+
+            player.pos=goal;
+            if(player.pos==0){
+              dice.text='GOAL';
+            }
+            else{
+              //if(ev[]){}
+              //else
+              //{
+              roled=false;
+            //}
+            }
+          }
         }).play();
       }
     }
     else{
-      if(!moving){roled=false;}
+      if(!moving){}
     }
   }
 
