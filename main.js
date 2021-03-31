@@ -1,14 +1,21 @@
 // phina.js をグローバル領域に展開
 phina.globalize();
 
-var num=0;
-var roled=false;
-var moving=false;
 var player;
+var com;
 var sprite=[];
-var target=6;
-var dice;
-var id=['','white','blue','red','green','yellow','black'];
+var lock1=false;
+var lock2=false;
+var num1=0;
+var num2=0;
+var dice1;
+var dice2;
+var l;
+var str;
+var time =200;
+var reload=false;
+
+var id=['white','blue','red','green','yellow','black'];
 var ASSETS = {
   // 画像
   image: {
@@ -19,6 +26,7 @@ var ASSETS = {
     'yellow': 'grid/yellow.png',
     'green': 'grid/green.png',
     'tomapiko': 'https://rawgit.com/phi-jp/phina.js/develop/assets/images/tomapiko.png',
+    'bird': 'bird.png',
   },
 };
 // MainScene クラスを定義
@@ -30,92 +38,72 @@ phina.define('MainScene', {
     this.backgroundColor = '#444';
 
     var group = DisplayElement().addChildTo(this);
-    var data = [
-      [5,4,1,1,1,1,1],
-      [0,9,0,0,0,0,1],
-      [1,4,1,1,1,1,1],
-      [1,0,0,0,0,0,0],
-      [1,1,1,4,1,1,1],
-      [0,0,0,0,0,0,1],
-      [1,1,4,1,1,1,1],
-      [1,0,9,0,0,0,0],
-      [1,1,4,1,1,4,1],
-      [0,0,0,0,0,9,2],
-      [5,2,1,1,1,4,3],
-    ];
 
-    var root = [
-      [ 0, 1, 2, 3, 4, 5, 6],
-      [-1,-1,-1,-1,-1,-1, 7],
-      [14,13,12,11,10,9, 8],
-      [15,-1,-1,-1,-1,-1,-1],
-      [16,17,18,19,20,21,22],
-      [-1,-1,-1,-1,-1,-1,23],
-      [30,29,28,27,26,25,24],
-      [31,-1,-1,-1,-1,-1,-1],
-      [32,33,34,35,36,37,38],
-      [-1,-1,-1,-1,-1,-1,39],
-      [46,45,44,43,42,41,40],
-    ];
 
-    var ev = [
-      ['G',-12, 0, 0, 0, 0, 0],
-      [-1,-1,-1,-1,-1,-1, 0],
-      [ 0,12, 0, 0, 0, 0, 0],
-      [ 0,-1,-1,-1,-1,-1,-1],
-      [ 0, 0, 0, 0, 0, 0, 0],
-      [-1,-1,-1,-1,-1,-1, 0],
-      [ 0, 0,-6, 0, 0, 0, 0],
-      [ 0,-1,-1,-1,-1,-1,-1],
-      [ 0, 0, 6, 0, 0,-4, 0],
-      [-1,-1,-1,-1,-1,-1, 3],
-      ['S',2, 0, 0, 0, 4,-2],
-    ];
 
-    for(var c=0;c<data.length;c++){
-      for(var r=0;r<data[c].length;r++){
-        switch (data[c][r]) {
-          case 0:
-          break;
-          case 9:
-          var path = Sprite(id[4], 1, 1).addChildTo(group);
-          path.setSize(8,96);
-          path.setPosition(80+80*r,80+80*c);
-          break;
-          default:
-          sprite[root[c][r]] = Sprite(id[data[c][r]], 1, 1).addChildTo(group);
-          sprite[root[c][r]].setSize(64,64);
-          sprite[root[c][r]].setPosition(80+80*r,80+80*c);
-          var t='';
-          if(ev[c][r]>0){t='+'+ev[c][r];}
-          else if(ev[c][r]<0){t=ev[c][r];}
-          else if(ev[c][r]==0){t='';}
-          else{t=ev[c][r];}
-          var label=Label({
-            x:80+80*r,
-            y:80+80*c,
-            text:t,
-            fill:'black',
-          }).addChildTo(group);
-          break;
-        }
+    //ランダム
+    for(var i=1;i<grid.length-1;i++){
+      var c= Math.floor(Math.random()*5);
+      if(c==1){var r= Math.floor(Math.random()*6)+1; var t='+'+r; c=1}
+      else if(c==2){var r= Math.floor(Math.random()*6)-6; var t=r;}
+      else{var r=null; var t=''; c=0;}
+      grid[i].color=c;
+      grid[i].ev=r;
+      grid[i].text=t;
+      console.log(grid[i])
+    }
+
+    for(var i=0;i<grid.length;i++){
+      var c = grid[i].color;
+      sprite[i] = Sprite(id[c], 1, 1).addChildTo(group);
+      sprite[i].setSize(64,64);
+      var x= 80+80 * grid[i].x;
+      var y= 80+80 * grid[i].y;
+      sprite[i].setPosition(x,y);
+      var label =Label({x:x,y:y,text:grid[i].text,fill:'black'}).addChildTo(this);
+    }
+
+
+    //初期位置
+    player = Sprite('tomapiko', 48, 48).addChildTo(this);
+    var n=grid.length-1;
+    player.pos=n;
+    player.setPosition(sprite[n].x-20,sprite[n].y);
+
+    com = Sprite('bird', 48, 48).addChildTo(this);
+    var n=grid.length-1;
+    com.pos=n;
+    com.setPosition(sprite[n].x+20,sprite[n].y);
+
+    // ラベルを生成
+    dice1 = Label({
+      x : this.gridX.center()-50,
+      y : this.gridY.center(),
+      text:'',
+      fill:'white',
+    }).addChildTo(this);
+    dice1.update=function(){
+      if(!lock1){
+        num1 = Math.floor(Math.random()*6+1);
+        dice1.text=num1;
       }
     }
 
-    player = Sprite('tomapiko', 64, 64).addChildTo(this);
-    player.setPosition(80,80+80*10);
-
-    // ラベルを生成
-    dice = Label({
-      x : this.gridX.center(),
+    dice2 = Label({
+      x : this.gridX.center()+50,
       y : this.gridY.center(),
+      text:'',
       fill:'white',
     }).addChildTo(this);
-    dice.update=function(){
-      if(!roled && !moving){num = Math.floor(Math.random()*6+1); dice.text=num;}
+    dice2.update=function(){
+      if(!lock2){
+        num2 = Math.floor(Math.random()*6+1);
+        dice2.text=num2;
+      }
     }
-    text=Label({x:320,y:160,text:'',fill:'white'}).addChildTo(this);
 
+
+    l=Label({x:320,y:160,text:'',fill:'white',stroke:'black',strokeWidth:5}).addChildTo(this);
   },
 
   update:function(){
@@ -123,35 +111,88 @@ phina.define('MainScene', {
   },
 
   onpointstart: function() {
-    if(!roled){
-      roled=true;
-      var goal=Math.max(0,target-num);
-      moving=true;
-      for(var i=0;i<num;i++){
-        target=Math.max(0,target-1);
-        player.tweener.moveTo(sprite[target].x,sprite[target].y,300)
-        .call(function() {
-          if(player.x==sprite[goal].x && player.y==sprite[goal].y){
+    if(reload){location.reload();}
+    if(!lock1){;
+      lock1=true;
+      PlayerMove();
 
-            player.pos=goal;
-            if(player.pos==0){
-              dice.text='GOAL';
+      function PlayerMove(){
+
+        var p=player.pos;
+        var step=Math.min(num1,player.pos);
+        var end = p-step;
+
+        for(var i=0; i<step; i++){
+          p--;
+          player.tweener.moveTo(sprite[p].x-20,sprite[p].y,time).wait(100)
+          .call(function() {
+            player.pos--;
+            if(player.pos==0){dice1.text='YOU';dice2.text='WIN'; lock2 =true; reload=true;}
+            else if(player.pos==end){
+              if(grid[end].ev==null){
+                ComMove();
+              }
+              else{
+                var s = grid[end].ev;
+                var e = Math.min(grid.length-1,p-s);
+                var v = Math.abs(p-e);
+                l.setPosition(sprite[p].x,sprite[p].y-60);
+                l.text=grid[end].text;
+                l.alpha=1;
+                l.tweener.wait(250).fadeOut(500).play();
+                player.tweener.wait(500).moveTo(sprite[e].x-20,sprite[e].y,250+50*v).wait(100)
+                .call(function() {
+                  player.pos=e;
+                  if(player.pos==0){dice1.text='YOU';dice2.text='WIN'; lock2 =true; reload=true;}
+                  else{ComMove();}
+                }).play()
+              }
             }
-            else{
-              //if(ev[]){}
-              //else
-              //{
-              roled=false;
-            //}
-            }
+          }).play();
+        }
+
+      }
+
+      function ComMove(){
+        if(!lock2){
+          lock2=true;
+          var c=com.pos;
+          var step=Math.min(num2,com.pos);
+          var end = c-step;
+
+          for(var i=0; i<step; i++){
+            c--;
+            com.tweener.moveTo(sprite[c].x+20,sprite[c].y,time).wait(100)
+            .call(function() {
+              com.pos--;
+              if(com.pos==0){dice1.text='CPU';dice2.text='WIN'; reload=true;}
+              else if(com.pos==end){
+                if(grid[end].ev==null){
+                  lock1=false;
+                  lock2=false;
+                }
+                else{
+                  var s = grid[end].ev;
+                  var e = Math.min(grid.length-1,c-s);
+                  var v = Math.abs(c-e);
+                  l.setPosition(sprite[c].x,sprite[c].y-60);
+                  l.text=grid[end].text;;
+                  l.alpha=1;
+                  l.tweener.wait(250).fadeOut(500).play();
+                  com.tweener.wait(500).moveTo(sprite[e].x+20,sprite[e].y,250+50*v).wait(100)
+                  .call(function() {
+                    com.pos=e;
+                    if(com.pos==0){dice1.text='CPU';dice2.text='WIN'; lock2 =true; reload=true;}
+                    else{lock1=false; lock2=false;}
+                  }).play()
+                }
+              }
+            }).play();
           }
-        }).play();
+        }
       }
     }
-    else{
-      if(!moving){}
-    }
-  }
+  },
 
 });
 
