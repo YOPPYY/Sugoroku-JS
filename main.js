@@ -37,6 +37,10 @@ var ASSETS = {
     'tomapiko': 'https://rawgit.com/phi-jp/phina.js/develop/assets/images/tomapiko.png',
     'bird': 'bird.png',
   },
+  sound:{
+    'decide':'sound/決定、ボタン押下9.mp3',
+    'step':'sound/カーソル移動7.mp3'
+  }
 };
 
 phina.define('Title', {
@@ -231,6 +235,7 @@ phina.define('Main', {
     if(reload){location.reload();}
     if(!lock1){;
       lock1=true;
+      SoundManager.play('decide');
       PlayerMove();
 
       function PlayerMove(){
@@ -243,7 +248,7 @@ phina.define('Main', {
         for(var i1=0; i1<step1; i1++){
           p--;
           player.tweener.moveTo(sprite[p].x-20,sprite[p].y,time)
-          .call(function() {dice1.text--;  if(dice1.stroke!='black'){dice1.stroke='black';}})
+          .call(function() {SoundManager.play('step');dice1.text--;  if(dice1.stroke!='black'){dice1.stroke='black';}})
           .wait(150)　//停止時間
           .call(function() {
             if(dice1.text=='0'){dice1.alpha=0;}
@@ -273,6 +278,7 @@ phina.define('Main', {
                       if(s1>0){player.pos--;}
                       if(s1<0){player.pos++;}
                       dice1.text--;
+                      SoundManager.play('step');
                       if(dice1.text=='0'){dice1.alpha=0;}
                       if(player.pos==0){GameOver(0)}
                       else if(player.pos==e1){ComRole()}
