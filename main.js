@@ -1,6 +1,15 @@
 // phina.js をグローバル領域に展開
 phina.globalize();
 
+var normal=1
+var plus=1
+var minus=1
+var max=6;
+var min=6;
+
+var auto = true;
+var turn;
+
 var player;
 var com;
 var sprite=[];
@@ -29,8 +38,85 @@ var ASSETS = {
     'bird': 'bird.png',
   },
 };
+
+phina.define('Title', {
+  superClass: 'CanvasScene',
+  init: function() {
+    this.superInit();
+    var self=this;
+    // 背景色を指定
+    this.backgroundColor = '#444';
+    Label({x:320,y:180,fontSize:50,text:'すごろくゲーム',fill:'white'}).addChildTo(this);
+    Label({x:320,y:240,text:'ゲーム設定',fill:'white'}).addChildTo(this);
+    // ラベルを生成
+    var g=DisplayElement().addChildTo(this);
+    var num=[]; var per=[];
+
+    var st=['red','darkgray','blue'];
+    var f=['pink','white','lightblue'];
+
+    if(localStorage.getItem('SugorokuSetting')){
+      var data=JSON.parse(localStorage.getItem('SugorokuSetting'));
+      minus= parseInt(data[0]);
+      normal= parseInt(data[1]);
+      plus= parseInt(data[2]);
+    }
+
+
+    LabelDisp()
+
+
+    function LabelDisp(){
+
+      var arr=[minus,normal,plus];
+      var sum= minus+normal+plus;
+
+      for(var i in arr){
+        if(num[i]){num[i].remove();}
+        if(per[i]){per[i].remove();}
+        num[i]=Label({x:320+120*i-120,y:480,fontSize:40,text:arr[i],fill:f[i]}).addChildTo(g);
+        per[i]=Label({x:320+120*i-120,y:680,fontSize:40,text:((arr[i]/sum)*100).toFixed(0)+'%',fill:f[i]}).addChildTo(g);
+      }
+    }
+
+    var button=[];
+
+    for(var i=0; i<3; i++){
+      for(var j=0; j<2; j++){
+        var t='';
+        if(j==0){t='+';}  if(j==1){t='-';}
+        var bt= Button({x:320+120*i-120,y:480+160*j-80,width:80,height:80,text:t,fill:f[i],stroke:st[i],fontColor:st[i]}).addChildTo(g);
+        button.push(bt);
+      }
+    }
+    button[0].onpointstart=function(){minus= Math.min(10,minus+1); LabelDisp();}
+    button[1].onpointstart=function(){minus= Math.max( 0,minus-1); LabelDisp();}
+
+    button[2].onpointstart=function(){normal= Math.min(10,normal+1); LabelDisp();}
+    button[3].onpointstart=function(){normal= Math.max( 0,normal-1); LabelDisp();}
+
+    button[4].onpointstart=function(){plus= Math.min(10,plus+1); LabelDisp();}
+    button[5].onpointstart=function(){plus= Math.max( 0,plus-1); LabelDisp();}
+
+
+
+
+    var start = Button({x:320,y:860,text:'START'}).addChildTo(this);
+    start.onpointstart=function(){
+      var setdata = JSON.stringify([minus,normal,plus]);
+      localStorage.setItem('SugorokuSetting',setdata);
+      self.exit('main');
+    }
+
+
+
+
+  },
+});
+
+
 // MainScene クラスを定義
-phina.define('MainScene', {
+phina.define('Main', {
   superClass: 'CanvasScene',
   init: function() {
     this.superInit();
@@ -40,11 +126,7 @@ phina.define('MainScene', {
     var group = DisplayElement().addChildTo(this);
 
     //比率設定
-    var normal=0
-    var plus=1
-    var minus=1
-    var max=6;
-    var min=6;
+
     var p=[];
 
     for(var i =0; i<normal; i++){p.push(0);}
@@ -77,15 +159,25 @@ phina.define('MainScene', {
 
 
     //初期位置
+    com = Sprite('bird', 48, 48).addChildTo(this);
+    var n=grid.length-1;
+    com.pos=n;
+    com.setPosition(sprite[n].x+20,sprite[n].y);
+
     player = Sprite('tomapiko', 48, 48).addChildTo(this);
     var n=grid.length-1;
     player.pos=n;
     player.setPosition(sprite[n].x-20,sprite[n].y);
 
-    com = Sprite('bird', 48, 48).addChildTo(this);
-    var n=grid.length-1;
-    com.pos=n;
-    com.setPosition(sprite[n].x+20,sprite[n].y);
+
+
+    turn = Label({
+      x : 320,
+      y : 24,
+      text:'1',
+      fill:'white',
+      align:'right'
+    }).addChildTo(this);
 
     // ラベルを生成
     dice1 = Label({
@@ -176,11 +268,12 @@ phina.define('MainScene', {
                   dice1.alpha=1;
                   for(var j1=0; j1<Math.abs(v1); j1++){
                     if(v1>0)p--; if(v1<0)p++;
-                    player.tweener.moveTo(sprite[p].x-20,sprite[p].y,100).wait(100)
+                    player.tweener.moveTo(sprite[p].x-20,sprite[p].y,time/2).wait(time/2)
                     .call(function() {
                       if(s1>0){player.pos--;}
                       if(s1<0){player.pos++;}
                       dice1.text--;
+                      if(dice1.text=='0'){dice1.alpha=0;}
                       if(player.pos==0){GameOver(0)}
                       else if(player.pos==e1){ComRole()}
                     }).play()
@@ -236,11 +329,12 @@ phina.define('MainScene', {
                     dice2.alpha=1;
                     for(var j2=0; j2<Math.abs(v2); j2++){
                       if(v2>0)c--; if(v2<0)c++;
-                      com.tweener.moveTo(sprite[c].x+20,sprite[c].y,100).wait(100)
+                      com.tweener.moveTo(sprite[c].x+20,sprite[c].y,time/2).wait(time/2)
                       .call(function() {
                         if(s2>0){com.pos--;}
                         if(s2<0){com.pos++;}
                         dice2.text--;
+                        if(dice2.text=='0'){dice2.alpha=0;}
                         if(com.pos==0){GameOver(1)}
                         else if(com.pos==e2){ComEnd();}
                       }).play()
@@ -253,7 +347,8 @@ phina.define('MainScene', {
         }
 
         function ComEnd(){
-          lock1=false; lock2=false; dice1.alpha=1; dice2.alpha=0;
+          lock1=false; lock2=false; dice1.alpha=1; dice2.alpha=0; turn.text++;
+          //if(auto){dice1.tweener.wait(500).call(function() {lock1=true; dice1=num1; PlayerMove()}).play();}
         }
       }
 
@@ -275,9 +370,22 @@ phina.define('MainScene', {
 phina.main(function() {
   // アプリケーション生成
   var app = GameApp({
-    startLabel: 'main', // メインシーンから開始する
+    startLabel: 'title', // メインシーンから開始する
     // アセット読み込み
     assets: ASSETS,
+
+    scenes: [
+      {
+        className: 'Title',
+        label: 'title',
+        next: 'main',
+      },
+      {
+        className: 'Main',
+        label: 'main',
+      },
+    ],
+
   });
   // アプリケーション実行
   app.run();
