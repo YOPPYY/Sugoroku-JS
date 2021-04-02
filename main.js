@@ -4,8 +4,8 @@ phina.globalize();
 var normal=1
 var plus=1
 var minus=1
-var max=6;
-var min=6;
+var p_max=6;
+var m_max=5;
 
 var auto = true;
 var turn;
@@ -142,8 +142,8 @@ phina.define('Main', {
     //ランダム
     for(var i=1;i<grid.length-1;i++){
       var c = p[Math.floor(Math.random()*p.length)];
-      if(c==1){var r= Math.floor(Math.random()*max)+1; var t='+'+r; c=1}
-      else if(c==2){var r= Math.floor(Math.random()*min)-min; var t=r;}
+      if(c==1){var r= Math.floor(Math.random()*p_max)+1; var t='+'+r; c=1}
+      else if(c==2){var r= Math.floor(Math.random()*m_max)-m_max; var t=r;}
       else{var r=null; var t=''; c=0;}
       grid[i].color=c;
       grid[i].ev=r;
