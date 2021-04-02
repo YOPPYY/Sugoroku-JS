@@ -154,7 +154,7 @@ phina.define('Main', {
       var x= 80+80 * grid[i].x;
       var y= 80+80 * grid[i].y;
       sprite[i].setPosition(x,y);
-      var label =Label({x:x,y:y,text:grid[i].text,fill:'black'}).addChildTo(this);
+      var label =Label({x:x,y:y,text:grid[i].text,fill:'white'}).addChildTo(this);
     }
 
 
