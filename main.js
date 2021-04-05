@@ -10,6 +10,8 @@ var m_max=5;
 var auto = true;
 var turn;
 
+var l1;
+var l2;
 var player;
 var com;
 var sprite=[];
@@ -222,75 +224,94 @@ phina.define('Main', {
         dice2.y=com.y-40;
       }
     }
+    
+     l1 = Label({
+      x : 420,
+      y : 24,
+      text:'1',
+      fill:'white',
+      align:'right'
+    }).addChildTo(this);
+
+     l2 = Label({
+      x : 520,
+      y : 24,
+      text:'1',
+      fill:'white',
+      align:'right'
+    }).addChildTo(this);
 
 
     l=Label({x:320,y:160,text:'',fill:'white',stroke:'black',strokeWidth:4}).addChildTo(this);
   },
 
   update:function(){
-
+    l1.text=lock1;
+    l2.text=lock2;
   },
 
   onpointstart: function() {
     if(reload){location.reload();}
-    if(!lock1){;
+
+    if(!lock1){
       lock1=true;
       SoundManager.play('decide');
       PlayerMove();
+    }
 
-      function PlayerMove(){
 
-        var p=player.pos;
-        var step1=Math.min(num1,player.pos);
-        var end1 = p-step1;
-        dice1.stroke='green';
-        player.tweener.wait(500).play(); //結果表示
-        for(var i1=0; i1<step1; i1++){
-          p--;
-          player.tweener.moveTo(sprite[p].x-20,sprite[p].y,time)
-          .call(function() {SoundManager.play('step');dice1.text--;  if(dice1.stroke!='black'){dice1.stroke='black';}})
-          .wait(150)　//停止時間
-          .call(function() {
-            if(dice1.text=='0'){dice1.alpha=0;}
-            player.pos--;
+    function PlayerMove(){
 
-            if(player.pos==0){GameOver(0)}
-            else if(player.pos==end1){
-              if(grid[end1].ev==null){
-                ComRole();
-              }
-              else{
-                var s1 = grid[end1].ev;
-                if(s1>0){var e1 = Math.max(0,p-s1); l.stroke='blue'}
-                if(s1<0){var e1 = Math.min(grid.length-1,p-s1); l.stroke='red'}
-                var v1 = p-e1;
-                l.setPosition(sprite[p].x,sprite[p].y-60);
-                l.text=grid[end1].text;
-                l.alpha=1;
-                dice1.text = Math.abs(v1)-1;
-                l.tweener.wait(250).fadeOut(500).wait(0).call(function() {
-                  l.stroke='black';
-                  dice1.alpha=1;
-                  for(var j1=0; j1<Math.abs(v1); j1++){
-                    if(v1>0)p--; if(v1<0)p++;
-                    player.tweener.moveTo(sprite[p].x-20,sprite[p].y,time/2).wait(time/2)
-                    .call(function() {
-                      if(s1>0){player.pos--;}
-                      if(s1<0){player.pos++;}
-                      dice1.text--;
-                      SoundManager.play('step');
-                      if(dice1.text=='0'){dice1.alpha=0;}
-                      if(player.pos==0){GameOver(0)}
-                      else if(player.pos==e1){ComRole()}
-                    }).play()
-                  }
-                }).play();
-              }
+      var p=player.pos;
+      var step1=Math.min(num1,player.pos);
+      var end1 = p-step1;
+      dice1.stroke='green';
+      player.tweener.wait(500).play(); //結果表示
+      for(var i1=0; i1<step1; i1++){
+        p--;
+        player.tweener.moveTo(sprite[p].x-20,sprite[p].y,time)
+        .call(function() {SoundManager.play('step');dice1.text--;  if(dice1.stroke!='black'){dice1.stroke='black';}})
+        .wait(150)　//停止時間
+        .call(function() {
+          if(dice1.text=='0'){dice1.alpha=0;}
+          player.pos--;
+
+          if(player.pos==0){GameOver(0)}
+          else if(player.pos==end1){
+            if(grid[end1].ev==null){
+              ComRole();
             }
-          }).play();
-        }
-
+            else{
+              var s1 = grid[end1].ev;
+              if(s1>0){var e1 = Math.max(0,p-s1); l.stroke='blue'}
+              if(s1<0){var e1 = Math.min(grid.length-1,p-s1); l.stroke='red'}
+              var v1 = p-e1;
+              l.setPosition(sprite[p].x,sprite[p].y-60);
+              l.text=grid[end1].text;
+              l.alpha=1;
+              dice1.text = Math.abs(v1)-1;
+              l.tweener.wait(250).fadeOut(500).wait(0).call(function() {
+                l.stroke='black';
+                dice1.alpha=1;
+                for(var j1=0; j1<Math.abs(v1); j1++){
+                  if(v1>0)p--; if(v1<0)p++;
+                  player.tweener.moveTo(sprite[p].x-20,sprite[p].y,time/2).wait(time/2)
+                  .call(function() {
+                    if(s1>0){player.pos--;}
+                    if(s1<0){player.pos++;}
+                    dice1.text--;
+                    SoundManager.play('step');
+                    if(dice1.text=='0'){dice1.alpha=0;}
+                    if(player.pos==0){GameOver(0)}
+                    else if(player.pos==e1){ComRole()}
+                  }).play()
+                }
+              }).play();
+            }
+          }
+        }).play();
       }
+
 
       function ComRole(){
         dice1.alpha=0;
