@@ -4,8 +4,8 @@ phina.globalize();
 var normal=1
 var plus=1
 var minus=1
-var p_max=6;
-var m_max=5;
+var p_max=3;
+var m_max=3;
 
 var auto = true;
 var turn;
@@ -36,7 +36,7 @@ var ASSETS = {
     'blue': 'grid/blue.png',
     'yellow': 'grid/yellow.png',
     'green': 'grid/green.png',
-    'tomapiko': 'https://rawgit.com/phi-jp/phina.js/develop/assets/images/tomapiko.png',
+    'tomapiko': 'tomapiko.png',
     'bird': 'bird.png',
   },
   sound:{
@@ -80,8 +80,10 @@ phina.define('Title', {
       for(var i in arr){
         if(num[i]){num[i].remove();}
         if(per[i]){per[i].remove();}
+        var n = (arr[i]/sum)*100;
+        if(!sum){n=33;}
         num[i]=Label({x:320+120*i-120,y:480,fontSize:40,text:arr[i],fill:f[i]}).addChildTo(g);
-        per[i]=Label({x:320+120*i-120,y:680,fontSize:40,text:((arr[i]/sum)*100).toFixed(0)+'%',fill:f[i]}).addChildTo(g);
+        per[i]=Label({x:320+120*i-120,y:680,fontSize:40,text:(n).toFixed(0)+'%',fill:f[i]}).addChildTo(g);
       }
     }
 
@@ -165,12 +167,12 @@ phina.define('Main', {
 
 
     //初期位置
-    com = Sprite('bird', 48, 48).addChildTo(this);
+    com = Sprite('bird', 36, 26).setSize(48,48).addChildTo(this);
     var n=grid.length-1;
     com.pos=n;
     com.setPosition(sprite[n].x+20,sprite[n].y);
 
-    player = Sprite('tomapiko', 48, 48).addChildTo(this);
+    player = Sprite('tomapiko', 64, 64).setSize(48,48).addChildTo(this);
     var n=grid.length-1;
     player.pos=n;
     player.setPosition(sprite[n].x-20,sprite[n].y);
@@ -224,7 +226,7 @@ phina.define('Main', {
         dice2.y=com.y-40;
       }
     }
-    
+
      l1 = Label({
       x : 420,
       y : 24,
