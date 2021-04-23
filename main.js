@@ -109,7 +109,7 @@ phina.define('Title', {
 
 
 
-    var start = Button({x:320,y:860,text:'START'}).addChildTo(this);
+    var start = Button({x:320,y:860,text:'スタート'}).addChildTo(this);
     start.onpointstart=function(){
       var setdata = JSON.stringify([minus,normal,plus]);
       localStorage.setItem('SugorokuSetting',setdata);
