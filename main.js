@@ -4,7 +4,7 @@ phina.globalize();
 var normal=1
 var plus=1
 var minus=1
-var p_max=3;
+var p_max=6;
 var m_max=3;
 
 var auto = true;
@@ -230,7 +230,7 @@ phina.define('Main', {
      l1 = Label({
       x : 420,
       y : 24,
-      text:'1',
+      text:'',
       fill:'white',
       align:'right'
     }).addChildTo(this);
@@ -238,7 +238,7 @@ phina.define('Main', {
      l2 = Label({
       x : 520,
       y : 24,
-      text:'1',
+      text:'',
       fill:'white',
       align:'right'
     }).addChildTo(this);
@@ -248,8 +248,8 @@ phina.define('Main', {
   },
 
   update:function(){
-    l1.text=lock1;
-    l2.text=lock2;
+    //l1.text=lock1;
+    //l2.text=lock2;
   },
 
   onpointstart: function() {
